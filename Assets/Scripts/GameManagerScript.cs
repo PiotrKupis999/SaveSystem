@@ -10,8 +10,14 @@ public class GameManagerScript : MonoBehaviour
     private TextMeshProUGUI m1_TextMeshProUGUI;
     [SerializeField]
     private TextMeshProUGUI m2_TextMeshProUGUI;
+    [SerializeField]
+    private TextMeshProUGUI m3_TextMeshProUGUI;
     private GameObject player;
     private float distance = 0;
+    private float bestScore = 0;
+
+    private IDataService dataService = new DataService();
+    private bool encrypted;
 
     // Start is called before the first frame update
     void Start()
@@ -25,8 +31,22 @@ public class GameManagerScript : MonoBehaviour
         if (distance < player.transform.position.z)
         {
             distance = player.transform.position.z;
+            if (bestScore<distance)
+            {
+                bestScore = distance;
+            }
         }
         m1_TextMeshProUGUI.text = "distance: " + Mathf.RoundToInt(distance);
         m2_TextMeshProUGUI.text = "coins: " + collectedCoins;
+        m3_TextMeshProUGUI.text = "best score: " + Mathf.RoundToInt(bestScore);
     }
+    /*
+    public void SerializeJson()
+    {
+        if (dataService.SaveData("/plater-stats.json", Plate)
+        {
+
+        }
+    }
+    */
 }
