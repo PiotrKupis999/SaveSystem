@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class GameManagerScript : MonoBehaviour
+public class GameManagerScript : MonoBehaviour, IDataService
 {
     public int collectedCoins = 0;
     [SerializeField]
@@ -16,8 +16,19 @@ public class GameManagerScript : MonoBehaviour
     private float distance = 0;
     private float bestScore = 0;
 
-    private IDataService dataService = new DataService();
-    private bool encrypted;
+
+    public void LoadData(PlayerStatsScript playerStats)
+    {
+        this.collectedCoins = playerStats.collectedCoins;
+        this.bestScore = playerStats.bestScore;
+    }
+
+    public void SaveData(ref PlayerStatsScript playerStats)
+    {
+
+        playerStats.collectedCoins = this.collectedCoins;
+        playerStats.bestScore = this.bestScore;
+    }
 
     // Start is called before the first frame update
     void Start()

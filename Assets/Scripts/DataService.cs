@@ -4,71 +4,81 @@ using System.IO;
 using UnityEngine;
 using Newtonsoft.Json;
 using System;
+using System.Runtime.CompilerServices;
+using Unity.VisualScripting;
+using System.Linq;
 
-public class DataService : IDataService
+public class DataService : MonoBehaviour
 {
-    public bool SaveData<T>(string relativePath, T data, bool encrypted)
+
+    [SerializeField] private string fileName;
+    public static DataService instance { get; private set; }
+
+    private PlayerStatsScript playerStats;
+    private List<IDataService> playerStatsList;
+    private FileDataHandler dataHandler;
+
+    private void Awake()
     {
-        string path = Application.persistentDataPath + relativePath;
-
-        if (File.Exists(path))
+        if (instance != null)
         {
-            try
-            {
-                File.Delete(path);
-                using FileStream stream = File.Create(path);
-                stream.Close();
-                File.WriteAllText(path, JsonConvert.SerializeObject(data));
-                return true;
-            }
-            catch(Exception e)
-            {
-                Debug.LogError(e.Message);
-                return false;
-            }
-                
+            Debug.LogError("more than one DataService");
         }
-        else
+        instance = this;
+    }
+
+    private void Start()
+    {
+        this.dataHandler = new FileDataHandler(Application.persistentDataPath, fileName);
+        this.playerStatsList = FindAllPlayerStats();
+        LoadGame();
+    }
+
+    public void NewGame()
+    {
+        this.playerStats = new PlayerStatsScript();
+    }
+
+    public void LoadGame()
+    {
+        this.playerStats = dataHandler.Load();
+
+        if (this.playerStats == null)
         {
-            try
-            {
-                using FileStream stream = File.Create(path);
-                stream.Close();
-                File.WriteAllText(path, JsonConvert.SerializeObject(data));
-                return true;
-            }
-            catch (Exception e)
-            {
-
-                Debug.LogError(e.Message);
-                return false;
-            }
+            Debug.Log("no data");
+            NewGame();
         }
+        foreach (IDataService playerStats1 in playerStatsList)
+        {
+            playerStats1.LoadData(playerStats);
+        }
+    }
 
+    public void SaveGame()
+    {
+        foreach (IDataService playerStats1 in playerStatsList)
+        {
+            playerStats1.SaveData(ref playerStats);
+        }
+        dataHandler.Save(playerStats);
+    }
+
+    private void OnApplicationQuit()
+    {
+        SaveGame(); 
     }
 
 
-    public T LoadData<T>(string relativePath, bool encrypted)
+    private List<IDataService> FindAllPlayerStats()
     {
-        string path = Application.persistentDataPath + relativePath;
-
-        if (!File.Exists(path))
-        {
-            throw new FileNotFoundException();
-        }
-
-        try
-        {
-            T data = JsonConvert.DeserializeObject<T>(File.ReadAllText(path));
-            return data;
-        }
-        catch (Exception e)
-        {
-            Debug.LogError(e.Message);
-            throw (e);
-
-        }
-
-
+        
+        IEnumerable<IDataService> playerStatsList = GameObject.FindObjectsOfType<MonoBehaviour>().
+            OfType<IDataService>();
+        return new List<IDataService>(playerStatsList);
     }
+
+
+    //---------------------------------------------
+
+
 }

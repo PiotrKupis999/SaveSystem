@@ -4,19 +4,7 @@ using UnityEngine;
 
 public interface IDataService 
 {
-    bool SaveData<T>(string relativePath, T data, bool encrypted);
+    void LoadData(PlayerStatsScript playerStats);
+    void SaveData(ref PlayerStatsScript playerStats);
 
-    T LoadData<T>(string relativePath, bool encrypted);
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }
